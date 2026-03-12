@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptographer's Toolkit</title>
+  <meta name="description"
+    content="Herramienta didáctica de criptografía: cifrado César, Vigenère y monoalfabético con análisis de frecuencias.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="./cryptographers_toolkit.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <header class="header">
+      <div>
+        <h1>Criptografía básica — César y Vigenère</h1>
+        <p class="subtitle">Versión didáctica para secundaria — introduce texto y elige un cifrado.</p>
+      </div>
+      <button id="theme_toggle" class="theme-toggle" title="Cambiar tema">
+        <span id="theme_icon">🌙</span>
+        <span class="theme-label" id="theme_label">Oscuro</span>
+      </button>
+    </header>
+
+    <div id="context_help" class="context-help hidden" aria-live="polite"></div>
+
+    <div class="header-controls">
+      <label for="lang_select">Idioma del texto:</label>
+      <select id="lang_select">
+        <option value="es">Castellano</option>
+        <option value="en">Inglés</option>
+      </select>
+      <label for="cipher_select">Tipo de cifrado:</label>
+      <select id="cipher_select">
+        <option value="caesar">Desplazamiento (César)</option>
+        <option value="mono">Sustitución (Monoalfabético)</option>
+        <option value="vigenere">Vigenère</option>
+      </select>
+    </div>
+
+    <main class="main" id="main_area">
+      <section class="io panel-wrap"
+        data-help="Zona de texto. Arriba escribes el mensaje original (texto claro o cifrado) y abajo aparece el resultado tras aplicar la operación seleccionada. Usa '⇅ Intercambiar' para mover la salida a la entrada y encadenar operaciones."
+        data-cipher="all">
+        <div class="panel-header">
+          <h2>Entrada / Salida</h2> <span class="chev">▾</span>
+        </div>
+        <div class="panel-content">
+          <div class="io-section">
+            <label for="input"><strong>Entrada</strong></label>
+            <textarea id="input" placeholder="Escribe aquí el mensaje (solo letras)."></textarea>
+          </div>
+          <div class="io-buttons">
+            <button id="swap_btn" title="Intercambiar entrada ↔ salida">⇅ Intercambiar</button>
+          </div>
+          <div class="io-section">
+            <label for="output"><strong>Salida</strong></label>
+            <textarea id="output" placeholder="Resultado" readonly></textarea>
+            <div id="v_colored_output" class="colored-box hidden" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="controls" id="right_panel">
+        <div class="panel-wrap"
+          data-help="Cifrado César: cada letra se sustituye por otra desplazada un número fijo de posiciones en el alfabeto. Por ejemplo, con desplazamiento 3, la A se convierte en D. Es uno de los cifrados más antiguos, usado por Julio César."
+          data-cipher="caesar">
+          <div class="panel-header">
+            <h2>Cifrado César (desplazamiento)</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel">
+            <p class="hint">Desplaza cada letra un número fijo de posiciones.</p>
+            <div class="row">
+              <label
+                data-help="Número de posiciones que se desplaza cada letra en el alfabeto. Con 1, A→B; con 3, A→D. El rango va de 0 (sin cambio) a 25.">Desplazamiento:
+                <span id="caesar_val">3</span></label>
+              <input id="caesar_shift" type="range" min="0" max="25" value="3"
+                oninput="document.getElementById('caesar_val').innerText=this.value">
+              <label style="margin-left:10px;"
+                data-help="Marca para invertir la operación: en vez de sumar el desplazamiento se resta, deshaciendo el cifrado."><input
+                  type="checkbox" id="caesar_decrypt"> Descifrar</label>
+            </div>
+            <div class="row">
+              <button
+                onclick="document.getElementById('caesar_shift').value=3;document.getElementById('caesar_val').innerText=3">Restablecer</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-wrap"
+          data-help="Cifrado monoalfabético: cada letra del alfabeto se sustituye por otra letra fija. A diferencia de César, la correspondencia es arbitraria (no un simple desplazamiento). Es más seguro que César pero vulnerable al análisis de frecuencias."
+          data-cipher="mono">
+          <div class="panel-header">
+            <h2>Cifrado Monoalfabético (Sustitución)</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel">
+            <p class="hint">Construye un mapeo letra→letra. Las posiciones no asignadas aparecerán como '*'.</p>
+            <div id="mono_map" class="mono-grid"></div>
+            <div class="mono-controls">
+              <button id="mono_clear">Limpiar mapeo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-wrap"
+          data-help="Cifrado de Vigenère: usa una palabra clave para variar el desplazamiento letra a letra, creando un cifrado polialfabético. Más resistente que César porque cada letra se cifra con un desplazamiento diferente según la posición en la clave."
+          data-cipher="vigenere">
+          <div class="panel-header">
+            <h2>Cifrado Vigenère</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel">
+            <p class="hint">Usa una palabra clave para desplazar según cada letra.</p>
+            <div class="row">
+              <label for="v_keyword"
+                data-help="La palabra clave determina el desplazamiento de cada letra. Por ejemplo, con clave 'ABC', la 1ª letra se desplaza 0, la 2ª 1, la 3ª 2, y se repite cíclicamente.">Palabra
+                clave</label>
+              <input id="v_keyword" type="text" placeholder="p.ej. clave">
+            </div>
+            <div class="row">
+              <label><input type="radio" name="v_op" id="v_add" checked> Cifrar (sumar)</label>
+              <label><input type="radio" name="v_op" id="v_subtract"> Descifrar (restar)</label>
+            </div>
+            <div class="row" style="margin-top: 8px; gap: 12px; flex-wrap: wrap;">
+              <label
+                data-help="Colorea cada letra del texto de salida según la letra de la palabra clave que la modificó. Muy útil para entender cómo funciona el cifrado de Vigenère.">
+                <input type="checkbox" id="v_color_output"> Colorear texto según la clave
+              </label>
+              <label
+                data-help="Agrupa las letras del texto de salida en bloques del tamaño de la palabra clave, haciendo evidentes los ciclos.">
+                <input type="checkbox" id="v_group_output"> Agrupar texto en bloques
+              </label>
+            </div>
+            <div id="v_key_legend" class="key-badge-container hidden"></div>
+            <div class="row" style="margin-top: 8px;">
+              <button
+                onclick="document.getElementById('v_keyword').value=''; document.getElementById('v_keyword').dispatchEvent(new Event('input'))">Borrar
+                clave</button>
+            </div>
+            <div class="row" style="margin-top: 12px;">
+              <div style="font-weight:600; font-size: 13px;">Tabla de Vigenère</div>
+            </div>
+            <div id="vigenere_table_container" class="vigenere-table-container"></div>
+          </div>
+        </div>
+
+        <div class="panel-wrap"
+          data-help="El Análisis de Kasiski busca secuencias repetidas en el texto cifrado para estimar la longitud de la palabra clave de Vigenère. Se basa en que si una secuencia de letras se repite, es probable que se haya cifrado con el mismo fragmento de la clave."
+          data-cipher="vigenere">
+          <div class="panel-header">
+            <h2>Análisis de Kasiski</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel">
+            <p class="hint">Busca patrones repetidos para deducir la longitud de la clave.</p>
+            <div class="row">
+              <button id="kasiski_run_btn">Analizar texto</button>
+            </div>
+            <div id="kasiski_results" style="margin-top:10px; font-size:13px;">
+              <div class="hint">Pulsa analizar para buscar repeticiones.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-wrap"
+          data-help="Análisis estadístico del texto: la longitud, las frecuencias de letras, el índice de coincidencia (IC) y el test de Friedman. El IC mide si las letras se distribuyen uniformemente (≈0.038) o siguen un patrón natural (≈0.065 en español). Friedman estima la longitud de la clave en cifrados polialfabéticos."
+          data-cipher="all">
+          <div class="panel-header">
+            <h2>Estadísticas</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel stats">
+            <p class="hint">Útiles para análisis de textos cifrados.</p>
+            <div class="stat-row"
+              data-help="Número total de caracteres válidos del alfabeto seleccionado en el texto de entrada. Los espacios y símbolos se ignoran.">
+              <strong>Longitud:</strong>
+              <div id="s_length" class="stat-val"></div>
+            </div>
+            <div class="stat-row"
+              data-help="Cuenta cuántas veces aparece cada letra, ordenadas de más a menos frecuente. En castellano, la E y la A suelen ser las más comunes.">
+              <strong>Frecuencias:</strong>
+              <div id="s_freq" class="stat-val"></div>
+            </div>
+            <div class="stat-row"
+              data-help="Índice de coincidencia (IC): probabilidad de que dos letras elegidas al azar del texto sean iguales. En texto natural español ≈0.065; en texto aleatorio ≈0.038. Valores altos sugieren cifrado monoalfabético; valores bajos sugieren polialfabético.">
+              <strong>Índice de coincidencia:</strong>
+              <div id="s_ic" class="stat-val"></div>
+            </div>
+            <div class="stat-row"
+              data-help="Test de Friedman: estima la longitud probable de la clave en un cifrado polialfabético (como Vigenère) a partir del índice de coincidencia. Un valor cercano a 1 indica cifrado monoalfabético o César.">
+              <strong>Test de Friedman:</strong>
+              <div id="s_ft" class="stat-val"></div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:14px;align-items:center;">
+              <span style="font-size:13px;font-weight:600;color:var(--text);margin-right:4px;">Histograma:</span>
+              <label data-help="Muestra la frecuencia de letras sueltas (1-gramas)."><input type="radio"
+                  name="hist_ngram" value="1" checked> Letras</label>
+              <label
+                data-help="Muestra la frecuencia de parejas de letras (dígrafos). Solo se muestran los más frecuentes para mantener la legibilidad."><input
+                  type="radio" name="hist_ngram" value="2"> Dígrafos</label>
+              <label
+                data-help="Muestra la frecuencia de tríos de letras (trígrafos). Solo se muestran los más frecuentes."><input
+                  type="radio" name="hist_ngram" value="3"> Trígrafos</label>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:14px;align-items:center;">
+              <label
+                data-help="Muestra u oculta las barras del histograma que representan la frecuencia real en el texto de salida."><input
+                  type="checkbox" id="show_observed" checked> Frecuencias observadas</label>
+              <label
+                data-help="Muestra u oculta las barras con la frecuencia teórica en el idioma seleccionado. Compararlas ayuda a identificar patrones."><input
+                  type="checkbox" id="show_expected" checked> Frecuencias esperadas</label>
+            </div>
+            <div style="margin-top:10px;"><canvas id="freq_canvas" width="680" height="220"></canvas></div>
+          </div>
+        </div>
+
+        <div class="panel lang-hint" id="lang_hint" data-cipher="all">
+          <h2 id="lang_hint_title">Frecuencias</h2>
+          <pre class="smallpre" id="lang_hint_pre">(pistas de frecuencias según el idioma seleccionado)</pre>
+        </div>
+
+        <div class="panel-wrap"
+          data-help="Criptoanálisis automático: prueba todas las claves posibles y las ordena según la puntuación chi-cuadrado (χ²). Cuanto menor es la puntuación, más se parece la distribución de letras del texto descifrado a la del idioma seleccionado."
+          data-cipher="all">
+          <div class="panel-header">
+            <h2>Romper cifrados</h2> <span class="chev">▾</span>
+          </div>
+          <div class="panel-content panel">
+            <p class="hint">Selecciona el tipo de cifrado y pulsa <strong>Romper</strong>. Los candidatos aparecen
+              abajo; usa <em>Aplicar</em> para ver el resultado.</p>
+            <div class="row">
+              <div style="font-weight:600">Romper tipo: <span id="break_note">(usa el selector 'Tipo de cifrado' en
+                  la cabecera)</span></div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <label
+                data-help="En Vigenère se prueban claves de longitud 1 hasta este valor. Más largo = más candidatos pero más lento.">Longitud
+                máxima (Vig.)</label>
+              <input id="v_maxlen" type="number" min="1" max="24" value="6" style="width:64px;margin-left:6px">
+              <button id="break_run_btn" style="margin-left:8px">Romper</button>
+            </div>
+            <div class="row" style="margin-top:8px;flex-direction:column;">
+              <div style="font-weight:600;margin-bottom:6px;">Candidatos</div>
+              <div id="break_candidates" class="candidates"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <p>Diseñado para enseñanza — conserva las estadísticas.</p>
+    </footer>
+    <script src="./crypto_engine.js"></script>
+    <script src="./ui_core.js"></script>
+    <script src="./ui_stats.js"></script>
+    <script src="./ui_vigenere.js"></script>
+    <script src="./ui_mono.js"></script>
+    <script src="./ui_breaker.js"></script>
+    <script src="./ui_main.js"></script>
+
+</body>
+
+</html>
