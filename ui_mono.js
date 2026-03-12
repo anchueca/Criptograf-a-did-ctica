@@ -14,25 +14,31 @@
         var map = getMonoMapping();
         var ct = e('input') ? e('input').value : '';
         var preview = CE.applyMonoMapping(ct, map, getAlphabet());
-        var outEl = e('output');
-        if (outEl) outEl.value = preview;
+        displayText(preview, 'output');
     };
 
     /** Set a specific letter mapping and refresh UI */
     window.setMonoMapping = function (from, to) {
         window._monoMap = window._monoMap || Object.create(null);
-        if (!to) delete window._monoMap[from];
-        else window._monoMap[from] = to;
+        var f = from.toLowerCase();
+        var t = to ? to.toLowerCase() : null;
+
+        // If 't' is already used by another letter, clear that other letter's mapping
+        if (t) {
+            for (var key in window._monoMap) {
+                if (window._monoMap[key] === t && key !== f) {
+                    delete window._monoMap[key];
+                }
+            }
+        }
+
+        if (!t) delete window._monoMap[f];
+        else window._monoMap[f] = t;
 
         renderMonoMap();
+        applyMonoMappingPreview();
 
-        var map = getMonoMapping();
-        var ct = e('input') ? e('input').value : '';
-        var preview = CE.applyMonoMapping(ct, map, getAlphabet());
-        var outEl = e('output');
-        if (outEl) outEl.value = preview;
-
-        if (typeof updateHistogram === 'function') updateHistogram();
+        if (typeof updateAll === 'function') updateAll();
     };
 
     /** Render the interactive grid of 26 letters for substitution */
@@ -42,6 +48,8 @@
         container.innerHTML = '';
         var alph = getAlphabet();
         var map = getMonoMapping();
+        
+        // Count reversed map to know what letters are already chosen
         var chosen = Object.create(null);
         for (var k in map) { if (map[k]) chosen[map[k]] = true; }
 
@@ -64,27 +72,19 @@
 
             for (var j = 0; j < alph.length; j++) {
                 var tgt = alph.charAt(j);
+                // Allow current choice or any unchosen choice
                 if (!chosen[tgt] || map[ch] === tgt) {
                     var o = document.createElement('option'); o.value = tgt; o.innerText = tgt.toUpperCase(); sel.appendChild(o);
                 }
             }
 
             sel.value = map[ch] || '';
-            sel.addEventListener('change', (function (from, cur, st) {
+            sel.addEventListener('change', (function (from) {
                 return function () {
                     var val = this.value || null;
                     setMonoMapping(from, val);
-                    if (cur) cur.innerText = (val || '*').toUpperCase();
-                    if (st) {
-                        var idx = getAlphabet().indexOf(from);
-                        var info2 = CE.getLetterCounts(e('input') ? e('input').value : '', getAlphabet());
-                        var cnt2 = info2.counts[idx] || 0;
-                        var tot2 = info2.total || 0;
-                        var pct2 = tot2 > 0 ? (cnt2 / tot2 * 100) : 0;
-                        st.innerText = cnt2 + ' (' + pct2.toFixed(1) + '%)';
-                    }
                 };
-            })(ch, current, stat));
+            })(ch));
 
             item.appendChild(src); item.appendChild(current); item.appendChild(sel); item.appendChild(stat);
             container.appendChild(item);
@@ -100,8 +100,7 @@
             window._monoMap = Object.create(null);
             renderMonoMap();
             applyMonoMappingPreview();
-            var outEl = e('output'); if (outEl) outEl.value = '';
-            if (typeof updateHistogram === 'function') updateHistogram();
+            if (typeof updateAll === 'function') updateAll();
         });
 
         var lang = e('lang_select');
@@ -109,6 +108,7 @@
             window._monoMap = Object.create(null);
             renderMonoMap();
             applyMonoMappingPreview();
+            if (typeof updateAll === 'function') updateAll();
         });
     };
 

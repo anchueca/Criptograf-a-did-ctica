@@ -21,7 +21,7 @@
     <header class="header">
       <div>
         <h1>Criptografía básica — César y Vigenère</h1>
-        <p class="subtitle">Versión didáctica para secundaria — introduce texto y elige un cifrado.</p>
+        <p class="subtitle">Versión didáctica para secundaria.</p>
       </div>
       <button id="theme_toggle" class="theme-toggle" title="Cambiar tema">
         <span id="theme_icon">🌙</span>
@@ -46,24 +46,35 @@
     </div>
 
     <main class="main" id="main_area">
-      <section class="io panel-wrap"
+      <section class="io static-panel"
         data-help="Zona de texto. Arriba escribes el mensaje original (texto claro o cifrado) y abajo aparece el resultado tras aplicar la operación seleccionada. Usa '⇅ Intercambiar' para mover la salida a la entrada y encadenar operaciones."
         data-cipher="all">
-        <div class="panel-header">
-          <h2>Entrada / Salida</h2> <span class="chev">▾</span>
+        <div class="panel-header no-collapse">
+          <h2>Entrada / Salida</h2>
+          <div class="interactive-control" data-help="Activa el modo de análisis interactivo para comparar letra a letra y realizar sustituciones directas.">
+            <input type="checkbox" id="interactive_toggle">
+            <label for="interactive_toggle">Análisis interactivo</label>
+          </div>
+          <span class="chev">▾</span>
         </div>
         <div class="panel-content">
-          <div class="io-section">
-            <label for="input"><strong>Entrada</strong></label>
-            <textarea id="input" placeholder="Escribe aquí el mensaje (solo letras)."></textarea>
+          <div id="standard_io">
+            <div class="io-section">
+              <label for="input"><strong>Entrada</strong></label>
+              <textarea id="input" placeholder="Escribe aquí el mensaje (solo letras)."></textarea>
+            </div>
+            <div class="io-buttons">
+              <button id="swap_btn" title="Intercambiar entrada ↔ salida">⇅ Intercambiar</button>
+            </div>
+            <div class="io-section">
+              <label for="output"><strong>Salida</strong></label>
+              <textarea id="output" placeholder="Resultado" readonly></textarea>
+              <div id="v_colored_output" class="colored-box hidden" aria-live="polite"></div>
+            </div>
           </div>
-          <div class="io-buttons">
-            <button id="swap_btn" title="Intercambiar entrada ↔ salida">⇅ Intercambiar</button>
-          </div>
-          <div class="io-section">
-            <label for="output"><strong>Salida</strong></label>
-            <textarea id="output" placeholder="Resultado" readonly></textarea>
-            <div id="v_colored_output" class="colored-box hidden" aria-live="polite"></div>
+          <div id="interactive_view" class="interactive-view hidden">
+            <p class="hint">Haz clic en una letra de la línea inferior (procesada) para establecer su sustitución.</p>
+            <div id="interactive_container" class="interactive-container"></div>
           </div>
         </div>
       </section>
@@ -88,8 +99,7 @@
                   type="checkbox" id="caesar_decrypt"> Descifrar</label>
             </div>
             <div class="row">
-              <button
-                onclick="document.getElementById('caesar_shift').value=3;document.getElementById('caesar_val').innerText=3">Restablecer</button>
+              <button onclick="resetCaesar()">Restablecer</button>
             </div>
           </div>
         </div>
@@ -121,7 +131,9 @@
               <label for="v_keyword"
                 data-help="La palabra clave determina el desplazamiento de cada letra. Por ejemplo, con clave 'ABC', la 1ª letra se desplaza 0, la 2ª 1, la 3ª 2, y se repite cíclicamente.">Palabra
                 clave</label>
-              <input id="v_keyword" type="text" placeholder="p.ej. clave">
+              <input id="v_keyword" type="text" placeholder="p.ej. clave" style="flex: 1;">
+              <label for="v_key_size" style="margin-left: 10px;" data-help="Fija la longitud de la palabra clave. Útil para análisis interactivo.">Longitud:</label>
+              <input id="v_key_size" type="number" min="1" max="50" value="5" style="width: 60px;">
             </div>
             <div class="row">
               <label><input type="radio" name="v_op" id="v_add" checked> Cifrar (sumar)</label>
@@ -139,9 +151,7 @@
             </div>
             <div id="v_key_legend" class="key-badge-container hidden"></div>
             <div class="row" style="margin-top: 8px;">
-              <button
-                onclick="document.getElementById('v_keyword').value=''; document.getElementById('v_keyword').dispatchEvent(new Event('input'))">Borrar
-                clave</button>
+              <button onclick="resetVigenere()">Borrar clave</button>
             </div>
             <div class="row" style="margin-top: 12px;">
               <div style="font-weight:600; font-size: 13px;">Tabla de Vigenère</div>
@@ -253,7 +263,7 @@
     </main>
 
     <footer class="footer">
-      <p>Diseñado para enseñanza — conserva las estadísticas.</p>
+      <p>Creado por Ander Chueca Rodríguez — Diseñado para enseñanza. En pruebas</p>
     </footer>
     <script src="./crypto_engine.js"></script>
     <script src="./ui_core.js"></script>
@@ -261,6 +271,7 @@
     <script src="./ui_vigenere.js"></script>
     <script src="./ui_mono.js"></script>
     <script src="./ui_breaker.js"></script>
+    <script src="./ui_interactive.js"></script>
     <script src="./ui_main.js"></script>
 
 </body>

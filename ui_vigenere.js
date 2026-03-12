@@ -9,9 +9,42 @@
         var alph = getAlphabet();
         var text = e('input') ? e('input').value : '';
         var keyword = e('v_keyword') ? e('v_keyword').value : '';
+        var keySizeEl = e('v_key_size');
+        var keySize = keySizeEl ? parseInt(keySizeEl.value, 10) : keyword.length;
+        
+        // Ensure keyword matches the selected size
+        if (keyword.length > 0) {
+            if (keyword.length > keySize) {
+                keyword = keyword.substring(0, keySize);
+                if (e('v_keyword')) e('v_keyword').value = keyword;
+            } else if (keyword.length < keySize) {
+                // If the user manually typed a shorter key, we might want to pad it?
+                // Or just let it be. But for interactive mode, it's better if it's consistent.
+            }
+        }
+
         var add = !!(e('v_add') && e('v_add').checked);
         var result = CE.vigenereApply(text, keyword, add, alph);
         displayText(result, 'output');
+    };
+
+    /** Sync keyword length when key size changes */
+    window.syncVigenereKeySize = function() {
+        var keySizeEl = e('v_key_size');
+        var keywordEl = e('v_keyword');
+        if (!keySizeEl || !keywordEl) return;
+        
+        var size = parseInt(keySizeEl.value, 10);
+        var kw = keywordEl.value;
+        var alph = getAlphabet();
+        
+        if (kw.length > size) {
+            keywordEl.value = kw.substring(0, size);
+        } else if (kw.length < size) {
+            // Fill with first char of alphabet (usually 'a')
+            keywordEl.value = kw + alph[0].repeat(size - kw.length);
+        }
+        updateAll();
     };
 
     /** Generate the interactive Vigenère table (Tabula Recta) */

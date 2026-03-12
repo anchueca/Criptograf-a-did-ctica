@@ -47,7 +47,8 @@
                     window._monoMap = c.map || Object.create(null);
                     if (typeof renderMonoMap === 'function') renderMonoMap();
                 }
-                displayText(c.plain, 'output');
+                
+                if (typeof updateAll === 'function') updateAll();
             });
 
             var copy = document.createElement('button'); copy.className = 'candidate-btn'; copy.innerText = 'Copiar';

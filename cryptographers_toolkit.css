@@ -107,6 +107,7 @@ body {
   color: var(--text);
   transition: background var(--transition), color var(--transition);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 /* ── Custom scrollbar ────────────────────────────────────────── */
@@ -133,12 +134,16 @@ body {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 16px 20px;
-  min-height: 100vh;
+  padding: 12px 16px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ── Header ──────────────────────────────────────────────────── */
 .header {
+  flex: 0 0 auto;
   background: var(--header-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -174,6 +179,7 @@ body {
   align-items: center;
   margin-top: 10px;
   flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
 .header-controls label {
@@ -217,7 +223,9 @@ body {
   margin-top: 12px;
   flex-wrap: nowrap;
   align-items: stretch;
-  height: calc(100vh - 160px);
+  flex: 1;
+  overflow: hidden; /* Main container of the two columns */
+  min-height: 0;
 }
 
 /* ── I/O column (left, sticky) ───────────────────────────────── */
@@ -229,13 +237,10 @@ body {
   border-radius: var(--radius);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 16px;
   display: flex;
   flex-direction: column;
-  align-self: flex-start;
   z-index: 5;
-  max-height: calc(100vh - 36px);
+  height: 100%;
   overflow-y: auto;
   transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
 }
@@ -249,6 +254,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   padding-left: 4px;
@@ -982,3 +988,121 @@ label {
 .vig-table td.active-cross {
   background: var(--accent-soft);
 }
+/* Interactive Visualization Styles */
+.interactive-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  margin-right: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.interactive-control input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.interactive-view {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-item);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  animation: fadeIn 0.3s ease;
+}
+
+.interactive-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.interactive-line {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping within a "logical" line if it's very long */
+  gap: 4px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 12px;
+}
+
+.interactive-line:last-child {
+  border-bottom: none;
+}
+
+.char-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 24px;
+  margin-bottom: 4px;
+}
+
+.char-original {
+  font-size: 14px;
+  color: var(--text-muted);
+  height: 20px;
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+.char-processed {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary);
+  border-bottom: 2px solid var(--border);
+  min-width: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.char-processed:hover {
+  border-bottom-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.char-processed:focus {
+  border-bottom-color: var(--primary);
+  background: rgba(59, 130, 246, 0.2);
+  outline: none;
+  transform: scale(1.1);
+}
+
+.char-processed.empty {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.char-space {
+  min-width: 12px;
+}
+
+.static-panel {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.no-collapse {
+    cursor: default !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Helper for hidden class if not present */
+.hidden { display: none !important; }

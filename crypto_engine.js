@@ -45,16 +45,25 @@ var CryptoEngine = (function () {
 
   /** Caesar: shift each letter by `shift` positions. Positive = encrypt. */
   function caesarApply(text, shift, alphabet) {
+    if (!text) return '';
     var alph = alphabet || DEFAULT_ALPHABET;
-    var t = sanitizedStr(text, alph);
     var n = alph.length;
-    var s = '';
-    for (var i = 0; i < t.length; i++) {
-      var idx = alph.indexOf(t.charAt(i));
-      if (idx === -1) s += t.charAt(i);
-      else s += alph.charAt(mod(idx + shift, n));
+    var out = '';
+    
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      var lower = ch.toLowerCase();
+      var idx = alph.indexOf(lower);
+      
+      if (idx === -1) {
+        out += ch;
+      } else {
+        var resIdx = mod(idx + shift, n);
+        var resChar = alph.charAt(resIdx);
+        out += (ch === lower) ? resChar : resChar.toUpperCase();
+      }
     }
-    return s;
+    return out;
   }
 
   /** Affine / mono: a*x + b mod n */
@@ -75,32 +84,54 @@ var CryptoEngine = (function () {
 
   /** Vigenère: add=true → encrypt (sum), add=false → decrypt (subtract). */
   function vigenereApply(text, keyword, add, alphabet) {
+    if (!text) return '';
     var alph = alphabet || DEFAULT_ALPHABET;
-    var t = sanitizedStr(text, alph);
     var kw = sanitizedStr(keyword, alph);
-    if (!kw) return t;
-    var k = kw.repeat(Math.ceil(t.length / kw.length)).substring(0, t.length);
+    if (!kw) return text;
+    
     var n = alph.length;
-    var s = '';
-    for (var i = 0; i < t.length; i++) {
-      var x = alph.indexOf(t.charAt(i));
-      var y = alph.indexOf(k.charAt(i));
-      if (x < 0 || y < 0) { s += t.charAt(i); continue; }
-      var r = add ? x + y : x - y;
-      s += alph.charAt(mod(r, n));
+    var out = '';
+    var letterIdx = 0;
+    
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      var lower = ch.toLowerCase();
+      var idx = alph.indexOf(lower);
+      
+      if (idx === -1) {
+        out += ch;
+      } else {
+        var kChar = kw.charAt(letterIdx % kw.length);
+        var kIdx = alph.indexOf(kChar);
+        var r = add ? idx + kIdx : idx - kIdx;
+        var resChar = alph.charAt(mod(r, n));
+        out += (ch === lower) ? resChar : resChar.toUpperCase();
+        letterIdx++;
+      }
     }
-    return s;
+    return out;
   }
 
   /** Apply a letter→letter mapping object. Unmapped letters become '*'. */
   function applyMonoMapping(text, map, alphabet) {
+    if (!text) return '';
     var alph = alphabet || DEFAULT_ALPHABET;
-    var s = sanitizedStr(text, alph);
     var out = '';
-    for (var i = 0; i < s.length; i++) {
-      var ch = s.charAt(i);
-      if (map && map[ch]) out += map[ch];
-      else out += '*';
+    
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      var lower = ch.toLowerCase();
+      
+      if (alph.indexOf(lower) === -1) {
+        out += ch;
+      } else {
+        var resChar = (map && map[lower]) ? map[lower] : '*';
+        if (resChar === '*') {
+          out += '*';
+        } else {
+          out += (ch === lower) ? resChar : resChar.toUpperCase();
+        }
+      }
     }
     return out;
   }

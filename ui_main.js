@@ -32,6 +32,22 @@
         displayText(out, 'input');
     };
 
+    /** Reset Caesar shift */
+    window.resetCaesar = function() {
+        var shiftEl = e('caesar_shift');
+        var valEl = e('caesar_val');
+        if (shiftEl) shiftEl.value = 3;
+        if (valEl) valEl.innerText = 3;
+        updateAll();
+    };
+
+    /** Clear Vigenère keyword */
+    window.resetVigenere = function() {
+        var kwEl = e('v_keyword');
+        if (kwEl) kwEl.value = '';
+        updateAll();
+    };
+
     /** updateAll: The central update trigger for the whole UI */
     window.updateAll = function () {
         var cipher = e('cipher_select') ? e('cipher_select').value : 'caesar';
@@ -53,6 +69,7 @@
 
         if (typeof updateVigenereHighlight === 'function') updateVigenereHighlight();
         if (typeof updateColoredOutput === 'function') updateColoredOutput();
+        if (typeof renderInteractive === 'function') renderInteractive();
     };
 
     /** Setup event listeners for real-time updates */
@@ -90,6 +107,11 @@
         if (vadd) vadd.addEventListener('change', updateAll);
         if (vsub) vsub.addEventListener('change', updateAll);
 
+        var vks = e('v_key_size');
+        if (vks) vks.addEventListener('input', function() {
+            if (typeof syncVigenereKeySize === 'function') syncVigenereKeySize();
+        });
+
         var lang = e('lang_select');
         if (lang) lang.addEventListener('change', updateAll);
 
@@ -115,7 +137,7 @@
 
     /** Setup collapsible panels */
     window.setupCollapsibles = function () {
-        var headers = document.querySelectorAll('.panel-header');
+        var headers = document.querySelectorAll('.panel-header:not(.no-collapse)');
         headers.forEach(function (h) {
             var wrap = h.parentElement;
             wrap.classList.remove('collapsed');
@@ -259,6 +281,14 @@
     window.boot = function () {
         setupThemeToggle();
         initToolkit();
+        
+        // Initialize components BEFORE setupRealtime to ensure they are ready for the first updateAll
+        if (typeof setupInteractive === 'function') setupInteractive();
+        if (typeof setupMonoPanel === 'function') setupMonoPanel();
+        if (typeof setupVigenereTable === 'function') setupVigenereTable();
+        if (typeof setupKasiski === 'function') setupKasiski();
+        if (typeof setupHistogramEvents === 'function') setupHistogramEvents();
+        if (typeof setupBreakers === 'function') setupBreakers();
 
         var swapBtn = e('swap_btn');
         if (swapBtn) swapBtn.addEventListener('click', function () {
@@ -272,16 +302,9 @@
 
         setupRealtime();
         setupCollapsibles();
-
-        if (typeof setupHistogramEvents === 'function') setupHistogramEvents();
-        if (typeof setupBreakers === 'function') setupBreakers();
-
         setupCipherSelector();
         setupContextHelp();
 
-        if (typeof setupMonoPanel === 'function') setupMonoPanel();
-        if (typeof setupVigenereTable === 'function') setupVigenereTable();
-        if (typeof setupKasiski === 'function') setupKasiski();
         if (typeof updateLanguageHints === 'function') updateLanguageHints();
 
         var lang = e('lang_select');
@@ -291,6 +314,7 @@
                 if (typeof updateHistogram === 'function') updateHistogram();
                 if (typeof applyStatsFreq === 'function') applyStatsFreq();
                 if (typeof setupVigenereTable === 'function') setupVigenereTable();
+                updateAll(); // Ensure everything refreshes on language change
             });
         }
     };

@@ -36,7 +36,7 @@
     window.displayText = function (t, id) {
         var tgt = e(id);
         if (!tgt) return;
-        tgt.value = CE.sanitizedStr(t, getAlphabet());
+        tgt.value = t || '';
         autoResizeTextarea(tgt);
     };
 
