@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://anchueca.github.io/Criptografia-didactica/sitemap.xml

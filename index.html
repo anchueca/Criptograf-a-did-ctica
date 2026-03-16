@@ -4,15 +4,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cryptographer's Toolkit</title>
+  <title>Criptografía Didáctica | Herramientas de Cifrado César, Vigenère y monoalfabético</title>
   <meta name="description"
-    content="Herramienta didáctica de criptografía: cifrado César, Vigenère y monoalfabético con análisis de frecuencias.">
+    content="Herramientas didácticas interactivas para aprender criptografía básica: Cifrado César, Vigenère y análisis de frecuencias. Ideal para estudiantes de secundaria y entusiastas.">
+  <meta name="keywords"
+    content="criptografía, didáctica, cifrado césar, vigenère, análisis de frecuencias, educación, seguridad informática">
+  <meta name="author" content="Ander Chueca Rodríguez">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://anchueca.github.io/Criptografia-didactica/">
+
+  <!-- Fonts and CSS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="./cryptographers_toolkit.css">
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Criptografía Didáctica",
+    "url": "https://anchueca.github.io/Criptografia-didactica",
+    "description": "Una herramienta web didáctica para la práctica y el aprendizaje de técnicas clásicas de cifrado como César y Vigenère.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "author": {
+      "@type": "Person",
+      "name": "Ander Chueca Rodríguez"
+    }
+  }
+  </script>
 </head>
 
 <body>
@@ -51,7 +76,8 @@
         data-cipher="all">
         <div class="panel-header no-collapse">
           <h2>Entrada / Salida</h2>
-          <div class="interactive-control" data-help="Activa el modo de análisis interactivo para comparar letra a letra y realizar sustituciones directas.">
+          <div class="interactive-control"
+            data-help="Activa el modo de análisis interactivo para comparar letra a letra y realizar sustituciones directas.">
             <input type="checkbox" id="interactive_toggle">
             <label for="interactive_toggle">Análisis interactivo</label>
           </div>
@@ -132,7 +158,8 @@
                 data-help="La palabra clave determina el desplazamiento de cada letra. Por ejemplo, con clave 'ABC', la 1ª letra se desplaza 0, la 2ª 1, la 3ª 2, y se repite cíclicamente.">Palabra
                 clave</label>
               <input id="v_keyword" type="text" placeholder="p.ej. clave" style="flex: 1;">
-              <label for="v_key_size" style="margin-left: 10px;" data-help="Fija la longitud de la palabra clave. Útil para análisis interactivo.">Longitud:</label>
+              <label for="v_key_size" style="margin-left: 10px;"
+                data-help="Fija la longitud de la palabra clave. Útil para análisis interactivo.">Longitud:</label>
               <input id="v_key_size" type="number" min="1" max="50" value="5" style="width: 60px;">
             </div>
             <div class="row">
